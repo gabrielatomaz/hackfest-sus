@@ -2,10 +2,25 @@
   "name": "jesus",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "resources/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon resources/index.js"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "convert-csv-to-json": "0.0.15",
+    "cors": "^2.8.5",
+    "csv-parser": "^2.3.2",
+    "csvtojson": "^2.0.10",
+    "express": "^4.17.1",
+    "json2csv": "^4.5.4",
+    "jsonwebtoken": "^8.5.1",
+    "pg": "^7.12.1"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.4"
+  }
 }
