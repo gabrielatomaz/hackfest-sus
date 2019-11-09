@@ -54,7 +54,48 @@ module.exports = {
         }
     },
     async geocode(ip) {
+        try {
+            const request = await requestGeocode(ip);
+            const geocode = { latitude: request.latitude, longitude: request.longitude };
+            const address = await insertGeocode(geocode);
+
+            return { ...request, address };
+        } catch (err) {
+            return err;
+        }
+    }
+    ,
+    async updateUserGeocode(ip, user_id) {
+        try {
+            const geocode = await requestGeocode(ip);
+            const address = await insertGeocode(geocode);
+            const address_id = address.id;
+            const result = await data.updateUserGeocode(address_id, user_id);
+
+            return result;
+        } catch (err) {
+            return err;
+        }
+    }
+}
+
+async function insertGeocode(geocode) {
+    try {
+        const result = await data.insertGeocode(geocode);
+
+        return result;
+    } catch (err) {
+        return err;
+    }
+}
+
+
+async function requestGeocode(ip) {
+    try {
         const request = await axios.get(`https://api.ipgeolocation.io/ipgeo?apiKey=${API_KEY}&ip=${ip}`);
+
         return request.data;
+    } catch (err) {
+        return err;
     }
 }

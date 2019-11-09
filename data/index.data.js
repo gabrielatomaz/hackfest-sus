@@ -65,5 +65,18 @@ module.exports = {
         );
 
         return rest.rows[0];
+    },
+    async updateUserGeocode(address_id, user_id) {
+        const rest = await pool.query(` UPDATE user_account SET address_id = ${address_id} WHERE id = ${user_id} RETURNING *`);
+
+        return rest.rows[0];
+    },
+    async insertGeocode(geocode) {
+        const rest = await pool.query(`
+        INSERT INTO address(lat, lgn) VALUES('${geocode.latitude}', '${geocode.longitude}')
+                RETURNING *`
+        );
+        
+        return rest.rows[0];
     }
 }

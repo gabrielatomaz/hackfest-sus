@@ -70,6 +70,19 @@ app.get('/rating/:hospital_id', async (req, res) => {
 
 app.get('/geocode/:ip', async (req, res) => {
   const geocode = await service.geocode(req.params.ip);
+
+  if (geocode.name == 'error')
+    res.json({ success: false });
+
+  res.json({ success: true, geocode });
+});
+
+app.get('/geocode/:ip/user/:id', async (req, res) => {
+  const geocode = await service.updateUserGeocode(req.params.ip, req.params.id);
+
+  if (geocode.name == 'error')
+    res.json({ success: false });
+
   res.json({ success: true, geocode });
 });
 
