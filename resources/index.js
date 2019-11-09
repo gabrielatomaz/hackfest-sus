@@ -86,4 +86,13 @@ app.get('/geocode/:ip/user/:id', async (req, res) => {
   res.json({ success: true, geocode });
 });
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+app.post('/ratio/:km', async (req, res) => {
+  const ratio = await service.getRatio(req.body, req.params.km * 1000);
+
+  if (ratio.name == 'error')
+    res.json({ success: false });
+
+  res.json({ success: true, ratio });
+});
+
+app.listen(port, () => console.log(`G-SUS is listening on port ${port}!`));

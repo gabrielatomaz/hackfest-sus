@@ -76,6 +76,15 @@ module.exports = {
         } catch (err) {
             return err;
         }
+    },
+    async getRatio(user_distance, km){
+        try {
+            const result = data.getRatio(user_distance, km);
+
+            return result;
+        } catch (err) {
+            return err;
+        }
     }
 }
 

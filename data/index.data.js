@@ -5,9 +5,8 @@ module.exports = {
     async store(user) {
         let addressRest = null;
         if (!(user.address === undefined)) {
-            console.log('excuse?');
             addressRest = await pool.query(`
-            INSERT INTO address(lat, lgn) VALUES('${user.address.lat}', '${user.address.lgn}') RETURNING *
+            INSERT INTO address(lat, lng) VALUES('${user.address.lat}', '${user.address.lng}') RETURNING *
         `);
         }
         const rest = !(user.address === undefined) ? await pool.query(`
@@ -40,7 +39,7 @@ module.exports = {
     },
     async hospitals() {
         const rest = await pool.query(`
-        SELECT h.id AS hospital_id, h.name, h.address_id, a.lgn, a.lat FROM hospital h
+        SELECT h.id AS hospital_id, h.name, h.address_id, a.lng, a.lat FROM hospital h
         JOIN address a ON a.id = h.address_id
         `);
 
@@ -73,10 +72,44 @@ module.exports = {
     },
     async insertGeocode(geocode) {
         const rest = await pool.query(`
-        INSERT INTO address(lat, lgn) VALUES('${geocode.latitude}', '${geocode.longitude}')
+        INSERT INTO address(lat, lng) VALUES('${geocode.latitude}', '${geocode.longitude}')
                 RETURNING *`
         );
-        
+
         return rest.rows[0];
+    },
+    async getRatio(user_distance, km) {
+        const addresses = await getAllAddress();
+        var distances = [];
+
+        for (address of addresses) {
+            const calcRatio = await calculateRatio(user_distance, { lat: address.lat, lng: address.lng });
+            distances.push({ hospital: address.name, distance: calcRatio.calculate_distance });
+        }
+
+        return distances.filter(isBigEnough(km));
     }
+}
+
+function isBigEnough(value) {
+    return function (element, index, array) {
+        return (element.distance <= value);
+    }
+}
+
+async function getAllAddress() {
+    const rest = await pool.query(`
+    SELECT a.lat, a.lng, h.name FROM address a
+    JOIN hospital h ON h.address_id = a.id`
+    );
+
+    return rest.rows;
+}
+
+async function calculateRatio(user_distance, distance) {
+    const rest = await pool.query(`
+    SELECT calculate_distance(${user_distance.lat}, ${user_distance.lng}, ${distance.lat}, ${distance.lng})`
+    );
+
+    return rest.rows[0];
 }
