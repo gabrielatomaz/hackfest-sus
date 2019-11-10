@@ -11,15 +11,21 @@ const cors = require('cors');
 app.use(cors())
 app.use(express.json());
 
-app.get('/dashboard_adults', (req, res) => {
-  CSVToJSON().fromFile(dashboard_adultos).then(source => {
-    res.send(source);
+app.get('/dashboard_adults/:km/:lat/:lng', async (req, res) => {
+  CSVToJSON().fromFile(dashboard_adultos).then(async (sources) => {
+    const ratios = await service.getRatio({ lat: req.params.lat, lng: req.params.lng }, req.params.km * 1000);
+    const finalResult = joinDashboardAndDatabase(sources, ratios, true);
+
+    res.send(finalResult);
   });
 });
 
-app.get('/dashboard_kids', (req, res) => {
-  CSVToJSON().fromFile(dashboard_kids).then(source => {
-    res.send(source);
+app.get('/dashboard_kids/:km/:lat/:lng', async (req, res) => {
+  CSVToJSON().fromFile(dashboard_kids).then(async (sources) => {
+    const ratios = await service.getRatio({ lat: req.params.lat, lng: req.params.lng }, req.params.km * 1000);
+    const finalResult = joinDashboardAndDatabase(sources, ratios);
+
+    res.send(finalResult);
   });
 });
 
@@ -94,5 +100,25 @@ app.post('/ratio/:km', async (req, res) => {
 
   res.json({ success: true, ratio });
 });
+
+function joinDashboardAndDatabase(sources, ratios, adults = false) {
+  let finalResult = [];
+
+  for (ratio of ratios) {
+    for (source of sources) {
+      if (adults) {
+        if (source.hospital.includes(ratio.name) || source.hospital.includes(ratio.initials)) {
+          finalResult.push({ source, ...ratio });
+        }
+      } else {
+        if (source.hospital_e_upas.includes(ratio.name) || source.hospital_e_upas.includes(ratio.initials)) {
+          finalResult.push({ source, ...ratio });
+        }
+      }
+    }
+  }
+
+  return finalResult;
+}
 
 app.listen(port, () => console.log(`G-SUS is listening on port ${port}!`));

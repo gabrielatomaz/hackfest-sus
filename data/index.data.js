@@ -102,7 +102,7 @@ function isBigEnough(value) {
 async function getAllAddress() {
     const rest = await pool.query(`
     SELECT a.lat, a.lng, a.address, h.address_id, 
-    h.rate, h.phone, h.name, h.photo FROM address a
+    h.rate, h.phone, h.name, h.photo, h.initials FROM address a
     JOIN hospital h ON h.address_id = a.id`
     );
 
