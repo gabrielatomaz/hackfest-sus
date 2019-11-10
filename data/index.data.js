@@ -72,7 +72,7 @@ module.exports = {
     },
     async insertGeocode(geocode) {
         const rest = await pool.query(`
-        INSERT INTO address(lat, lng) VALUES('${geocode.latitude}', '${geocode.longitude}')
+        INSERT INTO address(lat, lng, address) VALUES('${geocode.latitude}', '${geocode.longitude}', '${geocode.address}')
                 RETURNING *`
         );
 
@@ -84,10 +84,12 @@ module.exports = {
 
         for (address of addresses) {
             const calcRatio = await calculateRatio(user_distance, { lat: address.lat, lng: address.lng });
-            distances.push({ hospital: address.name, distance: calcRatio.calculate_distance });
+            distances.push({ ...address, distance: calcRatio.calculate_distance });
         }
 
-        return distances.filter(isBigEnough(km));
+        return distances.filter(isBigEnough(km)).sort(function (a, b) {
+            return a.rate - b.rate;
+        }).reverse();
     }
 }
 
@@ -99,7 +101,8 @@ function isBigEnough(value) {
 
 async function getAllAddress() {
     const rest = await pool.query(`
-    SELECT a.lat, a.lng, h.name FROM address a
+    SELECT a.lat, a.lng, a.address, h.address_id, 
+    h.rate, h.phone, h.name, h.photo FROM address a
     JOIN hospital h ON h.address_id = a.id`
     );
 
