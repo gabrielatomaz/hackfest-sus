@@ -11,18 +11,20 @@ const cors = require('cors');
 app.use(cors())
 app.use(express.json());
 
-app.get('/dashboard_adults/:km/:lat/:lng', async (req, res) => {
+app.get('/dashboard_adults/:km/:ip', async (req, res) => {
   CSVToJSON().fromFile(dashboard_adultos).then(async (sources) => {
-    const ratios = await service.getRatio({ lat: req.params.lat, lng: req.params.lng }, req.params.km * 1000);
+    const geocode = await service.geocode(req.params.ip);
+    const ratios = await service.getRatio({ lat: geocode.latitude, lng: geocode.longitude }, req.params.km * 1000);
     const finalResult = joinDashboardAndDatabase(sources, ratios, true);
 
     res.send(finalResult);
   });
 });
 
-app.get('/dashboard_kids/:km/:lat/:lng', async (req, res) => {
+app.get('/dashboard_kids/:km/:ip', async (req, res) => {
   CSVToJSON().fromFile(dashboard_kids).then(async (sources) => {
-    const ratios = await service.getRatio({ lat: req.params.lat, lng: req.params.lng }, req.params.km * 1000);
+    const geocode = await service.geocode(req.params.ip);
+    const ratios = await service.getRatio({ lat: geocode.latitude, lng: geocode.longitude }, req.params.km * 1000);
     const finalResult = joinDashboardAndDatabase(sources, ratios);
 
     res.send(finalResult);
